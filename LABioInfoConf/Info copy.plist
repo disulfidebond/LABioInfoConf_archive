@@ -7,7 +7,7 @@
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
-	<string>edu.lsu.cct.$(PRODUCT_NAME:rfc1034identifier)</string>
+	<string>com.labrn.$(PRODUCT_NAME:rfc1034identifier)</string>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
@@ -15,17 +15,13 @@
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
-	<string>1.0</string>
+	<string>1.1</string>
 	<key>CFBundleSignature</key>
 	<string>????</string>
 	<key>CFBundleVersion</key>
 	<string>2</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
-	<key>NSLocationAlwaysUsageDescription</key>
-	<string>This app will use your location information to determine a route to the conference location</string>
-	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>Your current location may be shown on the map</string>
 	<key>UILaunchStoryboardName</key>
 	<string>Launched</string>
 	<key>UIMainStoryboardFile</key>

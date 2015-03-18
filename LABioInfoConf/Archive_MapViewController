@@ -1,0 +1,390 @@
+//
+//  CCTMapViewController.m
+//  LRBN Conference Template
+//
+//  Created by John on 2/16/15.
+//  Copyright (c) 2015 John. All rights reserved.
+//
+
+// #import "CCTMapViewController.h"
+// #import "LBRNLocation.h"
+// #import "LBRNLocationDataController.h"
+// @import CoreLocation;
+
+// @interface CCTMapViewController ()<CLLocationManagerDelegate>
+// @property (strong, nonatomic) CLLocationManager *locationManager;
+
+
+// @end
+
+// User taps "location"
+// Scene opens with MKMapView
+// Maps would like to use your location
+// Display location, map has annotation of parking area
+// left button of Annotation AlertButton: Get Directions?
+// if TRUE: open in Apple Maps with directions
+// else: return to scene
+
+
+
+@implementation CCTMapViewController
+@synthesize coordinate;
+
+- (void) viewDidAppear:(BOOL)animated
+{
+LBRNLocationDataController *model = [[LBRNLocationDataController alloc] init];
+LBRNLocation *buildingLocation = [model getConferenceLocation];
+CLLocationCoordinate2D buildingLocationCoordinates;
+buildingLocationCoordinates.latitude = buildingLocation.latitude;
+buildingLocationCoordinates.longitude = buildingLocation.longitude;
+
+MKCoordinateRegion viewRegion = MKCoordinateRegionMakeWithDistance(buildingLocationCoordinates, 750, 750);
+
+
+[self.mapview setRegion:viewRegion animated:YES];
+
+// Get permission from user for location
+self.locationManager = [[CLLocationManager alloc] init];
+self.locationManager.delegate = self;
+CLAuthorizationStatus status = [CLLocationManager authorizationStatus];
+// [self.locationManager locationServicesEnabled];
+// deprecated???  used in Swift...
+
+if (status == kCLAuthorizationStatusNotDetermined) {
+NSLog(@"Requesting when not in use");
+[self.locationManager requestWhenInUseAuthorization];
+// add alert loop?
+} else if (status == kCLAuthorizationStatusDenied) {
+NSLog(@"Location Services denied");
+UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"Update Settings" message:@"You may change your Privacy settings to allow this App to access your location" preferredStyle:UIAlertControllerStyleActionSheet];
+
+UIAlertAction *defaultAction = [UIAlertAction actionWithTitle:@"Settings" style:UIAlertActionStyleDestructive handler:^(UIAlertAction *action){
+[[UIApplication sharedApplication] openURL:[NSURL URLWithString: UIApplicationOpenSettingsURLString]];
+}];
+UIAlertAction *cancelAction = [UIAlertAction actionWithTitle:@"Cancel" style:UIAlertActionStyleCancel handler:^(UIAlertAction *action){}];
+
+[alert addAction:defaultAction];
+[alert addAction:cancelAction];
+
+[self presentViewController:alert animated:YES completion:nil];
+
+
+// Alert the User and send them to the settings to turn on location
+
+} else if (status == kCLAuthorizationStatusAuthorizedWhenInUse) {
+NSLog(@"status auth in use");
+[self.locationManager startUpdatingLocation];
+
+} else if (status == kCLAuthorizationStatusAuthorizedAlways) {
+NSLog(@"status auth always");
+[self.locationManager startUpdatingLocation];
+
+} else if (status == kCLAuthorizationStatusRestricted) {
+NSLog(@"Location services restricted");
+UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"Update Settings" message:@"You may change your Privacy settings to allow this App to access your location" preferredStyle:UIAlertControllerStyleActionSheet];
+
+UIAlertAction *defaultAction = [UIAlertAction actionWithTitle:@"Settings" style:UIAlertActionStyleDestructive handler:^(UIAlertAction *action){
+[[UIApplication sharedApplication] openURL:[NSURL URLWithString: UIApplicationOpenSettingsURLString]];
+}];
+UIAlertAction *cancelAction = [UIAlertAction actionWithTitle:@"Cancel" style:UIAlertActionStyleCancel handler:^(UIAlertAction *action){}];
+
+[alert addAction:defaultAction];
+[alert addAction:cancelAction];
+
+[self presentViewController:alert animated:YES completion:nil];
+
+
+} else {
+NSLog(@"Undefined status, %@", status);
+}
+
+
+if ([self.locationManager respondsToSelector:@selector(requestWhenInUseAuthorization)]) {
+[self.locationManager startUpdatingLocation];
+} else {
+[self.locationManager requestWhenInUseAuthorization];
+}
+
+
+/*
+if (CLLocationManager.locationServicesEnabled) {
+switch (CLLocationManager.authorizationStatus) {
+case :
+<#statements#>
+break;
+
+default:
+break;
+}
+}
+
+*/
+
+
+
+}
+
+- (void)viewDidLoad {
+[super viewDidLoad];
+
+self.mapview.delegate = self;
+self.mapview.mapType = MKMapTypeHybrid;
+self.mapview.showsUserLocation = YES;
+
+LBRNLocationDataController *model = [[LBRNLocationDataController alloc] init];
+LBRNLocation *buildingLocation = [model getConferenceLocation];
+
+MKPointAnnotation *bldgPoint = [[MKPointAnnotation alloc] init];
+bldgPoint.coordinate = CLLocationCoordinate2DMake(buildingLocation.latitude, buildingLocation.longitude);
+bldgPoint.title = buildingLocation.anTitle;
+bldgPoint.subtitle = buildingLocation.subTitle;
+[self.mapview addAnnotation:bldgPoint];
+
+
+// Tab View Setup
+
+UITabBarController *tb = self.tabBarController;
+UITabBarItem *itemAt0 = [tb.tabBar.items objectAtIndex:0];
+UITabBarItem *itemAt1 = [tb.tabBar.items objectAtIndex:1];
+UITabBarItem *itemAt2 = [tb.tabBar.items objectAtIndex:2];
+UITabBarItem *itemAt3 = [tb.tabBar.items objectAtIndex:3];
+
+itemAt0.selectedImage = [[UIImage imageNamed:@"agenda.png"] imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal]; // Agenda
+itemAt0.image = [[UIImage imageNamed:@"agenda_.png"] imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal];
+
+itemAt1.selectedImage = [[UIImage imageNamed:@"location.png"] imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal]; // Location
+itemAt1.image = [[UIImage imageNamed:@"location_.png"] imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal];
+
+itemAt2.selectedImage = [[UIImage imageNamed:@"presentations.png"] imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal];
+// Presentations (deprecated: Presentation, Posters)
+itemAt2.image = [[UIImage imageNamed:@"presentations_.png"] imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal];
+
+itemAt3.selectedImage = [[UIImage imageNamed:@"confInfo.png"] imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal];
+// Info (deprecated: Registration)
+itemAt3.image = [[UIImage imageNamed:@"confInfo_.png"] imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal];
+
+// as per Apple Docs: there are three parameters: title, selected, and unselected.  if image == nil, the image (a.k.a. deselected image) is not displayed.  if selectedimage == nil, the image is not displayed, if title == nil, the title is not displayed.  It appears IB will overwrite the title, but not the image capabilities.
+
+
+// Do any additional setup after loading the view.
+
+// SEE BELOW!!!!
+
+
+
+
+// UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"Location Permission" message:@"Should this App be allowed to use nonpersonal information to determine your location?" preferredStyle:UIAlertControllerStyleActionSheet];
+
+// UIAlertAction *defaultAction = [UIAlertAction actionWithTitle:@"Ok" style:UIAlertActionStyleDestructive handler:^(UIAlertAction *action){}];
+// UIAlertAction *defaultAction = [UIAlertAction actionWithTitle:@"Yes" style:UIAlertActionStyleDefault handler:^(UIAlertAction *action){
+//  CLAuthorizationStatus status = [CLLocationManager authorizationStatus];
+
+
+
+// NSLog(@"Ok button Pressed");}];
+// UIAlertAction *cancelAction = [UIAlertAction actionWithTitle:@"No" style:UIAlertActionStyleDefault handler:^(UIAlertAction *action){
+//  NSLog(@"Cancel Button Pressed");}];
+
+// [alert addAction:defaultAction];
+// [alert addAction:cancelAction];
+// [self presentViewController:alert animated:YES completion:nil];
+}
+
+
+- (void)didReceiveMemoryWarning {
+[super didReceiveMemoryWarning];
+// Dispose of any resources that can be recreated.
+}
+
+/*
+- (void) mapViewWillStartLocatingUser:(MKMapView *)mapView
+{
+// Check Auth status (class method)
+CLAuthorizationStatus status = [CLLocationManager authorizationStatus];
+
+// if user has never been asked to decide on location authorization
+if (status == kCLAuthorizationStatusNotDetermined) {
+NSLog(@"Requesting when not in use");
+
+[self.locationManager requestWhenInUseAuthorization];
+} else if (status == kCLAuthorizationStatusDenied) {
+NSLog(@"Location Services denied");
+// Alert the User and send them to the settings to turn on location
+}
+
+}
+*/
+#pragma mark Delegate Methods
+/*
+- (void) mapView:(MKMapView *)mapView annotationView:(MKAnnotationView *)view calloutAccessoryControlTapped:(UIControl *)control
+{
+id <MKAnnotation> annotation = [view annotation];
+if ([annotation isKindOfClass:[MKPointAnnotation class]]) {
+NSLog(@"Map Tapped");
+}
+UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"Discolsure pressed" message:@"Click Cancel to Go Back" delegate:self cancelButtonTitle:@"Cancel" otherButtonTitles:@"Ok", nil];
+[UIAlertView show];
+}
+*/
+// NOTE!!!!
+// MUST SET UP PROMPT FOR OK FOR USER LOCATION INFORMATION!!!
+
+
+- (MKAnnotationView *) mapView:(MKMapView *)mapView viewForAnnotation:(id<MKAnnotation>)annotation
+{
+// return nil if location == userlocation
+if ([annotation isKindOfClass:[MKUserLocation class]]) {
+return nil;
+}
+if ([annotation isKindOfClass:[MKPointAnnotation class]]) {
+MKAnnotationView *pinView = (MKAnnotationView *)[mapView dequeueReusableAnnotationViewWithIdentifier:@"CustomPinAnnotationView"];
+if (!pinView) {
+pinView = [[MKAnnotationView alloc] initWithAnnotation:annotation reuseIdentifier:@"CustomPinAnnotationView"];
+pinView.canShowCallout = YES;
+pinView.image = [UIImage imageNamed:@"mapImg_.png"];
+pinView.calloutOffset = CGPointMake(0,32);
+
+// UIButton *rightButton = [UIButton buttonWithType:UIButtonTypeDetailDisclosure];
+// pinView.rightCalloutAccessoryView = rightButton;
+
+UIImageView *iconView = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"mapImg_.png"]];
+pinView.leftCalloutAccessoryView = iconView;
+
+} else {
+[mapView.userLocation setTitle:@"Here!"];
+// two notes for fix: add activity for user tap (or disable)
+
+}
+return pinView;
+}
+return nil;
+}
+
+
+- (IBAction)routeInMapsPressed:(UIButton *)sender {
+NSString *buttonTitle = NSLocalizedString(@"Cancel", @"Cancel");
+NSString *buttonTitle1 = NSLocalizedString(@"Show Route in Maps", @"Show Route in Maps");
+
+//NSString *url = [NSString stringWithFormat:@"http://maps.google.comsaddr=%f,%f%f", self.mapview.userLocation.coordinate.latitude, self.mapview.userLocation.coordinate.longitude, mapPoint.coordinate.latitude, mapPoint.coordinate.longitude];
+// [[UIApplication sharedApplication] openURL:url];
+
+LBRNLocationDataController *model = [[LBRNLocationDataController alloc] init];
+LBRNLocation *buildingLocation = [model getConferenceLocation];
+
+MKPointAnnotation *bldgPoint = [[MKPointAnnotation alloc] init];
+bldgPoint.coordinate = CLLocationCoordinate2DMake(buildingLocation.latitude, buildingLocation.longitude);
+bldgPoint.title = buildingLocation.anTitle;
+bldgPoint.subtitle = buildingLocation.subTitle;
+[self.mapview addAnnotation:bldgPoint];
+
+
+
+MKPlacemark *placemark = [[MKPlacemark alloc] initWithCoordinate:[bldgPoint coordinate] addressDictionary:nil];
+
+
+// IMPORTANT:  THIS IMPLEMENTATION WILL CONFLICT WITH EXISTING!!  MODIFY OR MERGE!!!
+MKMapItem *mapItem = [[MKMapItem alloc] initWithPlacemark:placemark];
+[mapItem setName:@"Digital Media Center"];
+NSDictionary *options = @{MKLaunchOptionsDirectionsModeKey : MKLaunchOptionsDirectionsModeDriving};
+[mapItem openInMapsWithLaunchOptions:options];
+
+// Check Auth status (class method)
+CLAuthorizationStatus status = [CLLocationManager authorizationStatus];
+
+// if user has never been asked to decide on location authorization
+if (status == kCLAuthorizationStatusNotDetermined) {
+NSLog(@"Requesting when not in use");
+
+[self.locationManager requestWhenInUseAuthorization];
+} else if (status == kCLAuthorizationStatusDenied) {
+NSLog(@"Location Services denied");
+// Alert the User and send them to the settings to turn on location
+}
+
+
+
+
+
+
+
+// UIActionSheet *sheet = [[UIActionSheet alloc] initWithTitle:nil delegate:self cancelButtonTitle:buttonTitle destructiveButtonTitle:nil otherButtonTitles:buttonTitle1, nil];
+
+// [sheet showInView:self.view];
+
+
+// UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"Location Permission" message:@"Should this App be allowed to use nonpersonal information to determine your location?" preferredStyle:UIAlertControllerStyleAlert];
+
+// UIAlertAction *defaultAction = [UIAlertAction actionWithTitle:@"Ok" style:UIAlertActionStyleDefault handler:^(UIAlertAction *action){}];
+// [alert addAction:defaultAction];
+// [self presentViewController:alert animated:YES completion:nil];
+
+// ###########
+// ###########
+// NOTES: user taps "location"
+// if locationmanager == TRUE, proceed
+
+
+
+}
+
+// - (void) actionSheet:(UIActionSheet *)actionSheet clickedButtonAtIndex:(NSInteger)buttonIndex
+// {
+/*
+LBRNLocationDataController *model = [[LBRNLocationDataController alloc] init];
+LBRNLocation *buildingLocation = [model getConferenceLocation];
+MKPointAnnotation *bldgPoint = [[MKPointAnnotation alloc] init];
+bldgPoint.coordinate = CLLocationCoordinate2DMake(buildingLocation.latitude, buildingLocation.longitude);
+MKPlacemark *placemark = [[MKPlacemark alloc] initWithPlacemark:buildingLocation];
+*/
+//    switch (buttonIndex) {
+//        case 0:
+
+
+
+// create a map region pointing to the earthquake location
+// CLLocationCoordinate2D location = (CLLocationCoordinate2D) { earthquake.latitude, earthquake.longitude };
+/*
+NSValue *locationValue = [NSValue valueWithMKCoordinate:bldgPoint.coordinate];
+
+MKCoordinateSpan span = (MKCoordinateSpan) { 2.0, 2.0 };
+NSValue *spanValue = [NSValue valueWithMKCoordinateSpan:span];
+
+NSDictionary *launchOptions = @{ MKLaunchOptionsMapTypeKey : @(MKMapTypeHybrid),
+MKLaunchOptionsMapCenterKey : locationValue,
+MKLaunchOptionsMapSpanKey : spanValue,
+MKLaunchOptionsShowsTrafficKey : @(NO),
+MKLaunchOptionsDirectionsModeDriving : @(NO) };
+
+// make sure the map item has a pin placed on it with the title as the earthquake location
+MKPlacemark *placemark = [[MKPlacemark alloc] initWithCoordinate:location
+addressDictionary:nil];
+*/
+//MKPlacemark *placemark = [[MKPlacemark alloc] initWithCoordinate:bldgPoint.coordinate
+//                                               addressDictionary:nil];
+
+// MKMapItem *mapItem = [[MKMapItem alloc] initWithPlacemark:<#(MKPlacemark *)#>
+// [mapItem setName:earthquake.location];
+// [mapItem openInMapsWithLaunchOptions:launchOptions];
+
+//            break;
+
+//        default:
+//            break;
+//    }
+
+// }
+
+
+
+
+/*
+#pragma mark - Navigation
+
+// In a storyboard-based application, you will often want to do a little preparation before navigation
+- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
+// Get the new view controller using [segue destinationViewController].
+// Pass the selected object to the new view controller.
+}
+*/
+
+@end
