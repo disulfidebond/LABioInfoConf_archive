@@ -58,7 +58,6 @@ class ViewController : UIViewController, UITableViewDataSource {
     
     override func prefersStatusBarHidden() -> Bool {
         return true
-        // ??
     }
     
     
