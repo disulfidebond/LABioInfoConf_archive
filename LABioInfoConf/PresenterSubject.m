@@ -10,9 +10,4 @@
 
 @implementation PresenterSubject
 
-// Notes for remaining work:
-// work out stubs for NSURL and JSON formatting to complete Agenda
-    // fix map
-    // create and fix info page
-
 @end
