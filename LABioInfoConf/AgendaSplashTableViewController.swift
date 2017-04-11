@@ -7,16 +7,6 @@
 //
 
 
-
-// Updates for v1.1
-// - Add Website link, implement -addFromURL() method and -addFromJSON() method
-// - Verify (absolutely) connectivity, and have failsafe array or link for a try->catch routine
-// add user interaction and content for rows
-// - Implement names into exsiting table from JSON
-// - Add links to reviews?/Set up API?
-// Updates for v1.2
-// - add links to Presenter PDFs
-
 import UIKit
 
 class AgendaSplashTableViewController: UITableViewController {
@@ -117,16 +107,6 @@ class AgendaSplashTableViewController: UITableViewController {
     }
     */
     
-    /*
-    override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
-        if segue.identifier == "firstSpeakerSegue" {
-            let ViewFromTblViewController = segue.destinationViewController as UIViewController
-            let indexPath = self.tableView.indexPathForSelectedRow()!
-            let destinationTitle = conferenceSpeakers[indexPath.row].name
-            ViewFromTblViewController.title = destinationTitle
-        }
-    }
-    */
     /*
     // Override to support conditional editing of the table view.
     override func tableView(tableView: UITableView, canEditRowAtIndexPath indexPath: NSIndexPath) -> Bool {
