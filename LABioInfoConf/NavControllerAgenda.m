@@ -25,11 +25,9 @@
     itemAt1.image = [[UIImage imageNamed:@"location_.png"] imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal];
     
     itemAt2.selectedImage = [[UIImage imageNamed:@"presentations.png"] imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal];
-    // Presentations (deprecated: Presentation, Posters)
     itemAt2.image = [[UIImage imageNamed:@"presentations_.png"] imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal];
     
     itemAt3.selectedImage = [[UIImage imageNamed:@"confinfo.png"] imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal];
-    // Info (deprecated: Registration)
     itemAt3.image = [[UIImage imageNamed:@"confinfo_.png"] imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal];
     
     // as per Apple Docs: there are three parameters: title, selected, and unselected.  if image == nil, the image (a.k.a. deselected image) is not displayed.  if selectedimage == nil, the image is not displayed, if title == nil, the title is not displayed.  It appears IB will overwrite the title, but not the image capabilities.
